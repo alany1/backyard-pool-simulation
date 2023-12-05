@@ -16,7 +16,7 @@ import {
     HalfFloatType,
     ClampToEdgeWrapping,
     NearestFilter,
-    RGBAFormat, UnsignedByteType, WebGLRenderTarget,
+    RGBAFormat, UnsignedByteType, WebGLRenderTarget, DirectionalLight,
 } from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'stats-js'
@@ -87,6 +87,7 @@ export default class MainScene {
 
         this.setSphere()
         this.setWater()
+        this.setLights()
 
         this.handleResize()
 
@@ -112,6 +113,17 @@ export default class MainScene {
     setScene() {
         this.#scene = new Scene()
         this.#scene.background = new Color(0xffffff)
+    }
+
+    setLights() {
+        const sun = new DirectionalLight( 0xFFFFFF, 3.0 );
+        sun.position.set( 300, 400, 175 );
+        this.#scene.add( sun );
+
+        const sun2 = new DirectionalLight( 0x40A040, 2.0 );
+        sun2.position.set( - 100, 350, - 200 );
+        this.#scene.add( sun2 );
+
     }
 
     /**
