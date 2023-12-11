@@ -16,7 +16,14 @@ import {
   HalfFloatType,
   ClampToEdgeWrapping,
   NearestFilter,
-  RGBAFormat, UnsignedByteType, WebGLRenderTarget, DirectionalLight, CubeTextureLoader, Vector3,
+  RGBAFormat,
+  UnsignedByteType,
+  WebGLRenderTarget,
+  DirectionalLight,
+  CubeTextureLoader,
+  Vector3,
+  BoxGeometry,
+  MeshBasicMaterial, MeshPhysicalMaterial, DoubleSide, NormalBlending,
 } from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'stats-js'
@@ -55,6 +62,7 @@ export default class MainScene {
     #width
     #height
     #mesh
+    #cube_mesh
     #plane_mesh
 
     constructor() {
@@ -102,6 +110,7 @@ export default class MainScene {
 
         this.setWater()
 
+        // this.setContainer()
         /////////////////////////
 
         this.handleResize()
@@ -147,9 +156,27 @@ export default class MainScene {
 
     }
 
+
+    setContainer() {
+      const geometry = new BoxGeometry( BOUNDS, 2*BOUNDS, BOUNDS );
+      // const material = new MeshBasicMaterial( {color: 0x00ff00} );
+      const material = new MeshPhysicalMaterial(
+        {
+          roughness: 0,
+          metalness: 0,
+          // color: 0xFFEA00,
+          transmission: 1.0
+        }
+      )
+      const cube = new Mesh( geometry, material );
+      cube.rotation.x = -Math.PI  / 2;
+      cube.matrixAutoUpdate = false;
+      cube.updateMatrix();
+      this.#scene.add( cube );
+    }
     setWater() {
         const materialColor = 0x0040C0;
-        const geometry = new PlaneGeometry(BOUNDS, BOUNDS, WIDTH - 1, WIDTH - 1);
+        const geometry = new PlaneGeometry(BOUNDS, 2*BOUNDS, WIDTH - 1, WIDTH - 1);
         const material = new ShaderMaterial({
           uniforms: UniformsUtils.merge([
             ShaderLib['phong'].uniforms,
@@ -157,11 +184,14 @@ export default class MainScene {
               'heightmap': {value: null},
               'envMap': {value: this.#scene.background}, // Pass the cubemap here
               'cameraPos': {value: new Vector3()}, // Camera position
-              'reflectionStrength': { value: 0.8 }
+              'reflectionStrength': { value: 0.8},
+              'transparency': {value: 0.5}
             }
           ]),
-            vertexShader: waterVertexShader,
-            fragmentShader: waterFragmentShader
+          transparent: true,
+          blending: NormalBlending,
+          vertexShader: waterVertexShader,
+          fragmentShader: waterFragmentShader,
         });
 
         material.lights = true;
