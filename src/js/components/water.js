@@ -47,12 +47,15 @@ const WIDTH = 128;
 const BOUNDS = 512;
 let waterUniforms;
 let agentUniforms;
+let heightmapUniforms;
 let gpuCompute;
 let heightmapVariable;
 let smoothShader;
 let readWaterLevelShader;
 let readWaterLevelImage;
 let readWaterLevelRenderTarget;
+let lastTimestamp = performance.now();
+let deltaTime = 0;
 
 
 export default class MainScene {
@@ -112,10 +115,10 @@ export default class MainScene {
         this.setControls()
         this.setAxesHelper()
 
+        this.setAgent()
         this.setWater()
         this.setGround()
         this.setWalls()
-        this.setAgent()
 
         // this.setContainer()
         /////////////////////////
@@ -136,8 +139,30 @@ export default class MainScene {
 
         requestAnimationFrame(this.animate);
 
+        const currentTimestamp = performance.now();
+        deltaTime = (currentTimestamp - lastTimestamp) / 1000; // Convert to seconds
+        lastTimestamp = currentTimestamp;
+
+        this.stepAgent(deltaTime);
+
         this.render();
         this.#stats.update();
+    }
+
+    stepAgent(deltaTime) {
+        // move in circle of radius BOUNDS/4 every second
+        const radius = BOUNDS/4;
+        const speed = 2 * Math.PI * radius;
+        const deltaAngle = speed * deltaTime / radius;
+
+        // const angle = Math.atan(this.#sphere.position.z / this.#sphere.position.x) + deltaAngle;
+
+        // const x = radius * Math.cos(angle);
+        // const z = radius * Math.sin(angle);
+        this.#sphere.position.x += deltaAngle;
+        this.#sphere.position.z += deltaAngle;
+        // this.#sphere.updateMatrix();
+
     }
 
     render() {
@@ -147,12 +172,17 @@ export default class MainScene {
         gpuCompute.compute();
         waterUniforms['heightmap'].value = gpuCompute.getCurrentRenderTarget(heightmapVariable).texture;
         waterUniforms['cameraPos'].value.copy(this.#camera.position);
+        waterUniforms['agentPosition'].value = this.#sphere.position;
+        waterUniforms['tf_agent_to_world'].value = this.#sphere.matrixWorld;
 
-        // console.log(this.#sphere.matrixWorld)
+        heightmapUniforms['agentPosition'].value = this.#sphere.position;
+        heightmapUniforms['tf_water_to_world'].value = this.#plane_mesh.matrixWorld;
 
         agentUniforms['heightmap'].value = gpuCompute.getCurrentRenderTarget(heightmapVariable).texture;
         agentUniforms['tf_agent_to_world'].value = this.#sphere.matrixWorld;
-        agentUniforms['tf_world_to_water'].value = this.#plane_mesh.matrixWorld;
+
+        console.log(this.#sphere.position)
+        console.log(this.#plane_mesh.matrixWorld)
 
       this.#renderer.render(this.#scene, this.#camera);
     }
@@ -166,7 +196,6 @@ export default class MainScene {
                 {
                     'heightmap': {value: null},
                     'tf_agent_to_world': {value: null},
-                    'tf_world_to_water': {value: null},
                     'waterWidth': {value: BOUNDS},
                     'waterDepth': {value: BOUNDS},
                     'water_resting_height': {value: -BOUNDS/16},
@@ -266,13 +295,15 @@ export default class MainScene {
         const material = new ShaderMaterial({
           uniforms: UniformsUtils.merge([
             ShaderLib['phong'].uniforms,
-            {
-              'heightmap': {value: null},
-              'envMap': {value: this.#scene.background}, // Pass the cubemap here
-              'cameraPos': {value: new Vector3()}, // Camera position
-              'reflectionStrength': { value: .6},
-              'transparency': {value: 0.8}
-            }
+              {
+                  'heightmap': {value: null},
+                  'envMap': {value: this.#scene.background}, // Pass the cubemap here
+                  'cameraPos': {value: new Vector3()}, // Camera position
+                  'reflectionStrength': {value: .6},
+                  'transparency': {value: 0.8},
+                  'agentPosition': {value: null},
+                  'tf_agent_to_world': {value: null},
+              }
           ]),
           transparent: true,
           blending: NormalBlending,
@@ -317,10 +348,14 @@ export default class MainScene {
 
         gpuCompute.setVariableDependencies(heightmapVariable, [heightmapVariable]);
 
+        heightmapUniforms = heightmapVariable.material.uniforms;
+
         heightmapVariable.material.uniforms['mousePos'] = {value: new Vector2(10000, 10000)};
         heightmapVariable.material.uniforms['mouseSize'] = {value: 20.0};
         heightmapVariable.material.uniforms['viscosityConstant'] = {value: 0.98};
         heightmapVariable.material.uniforms['heightCompensation'] = {value: 0};
+        heightmapVariable.material.uniforms['agentPosition'] = {value: this.#sphere.position};
+        heightmapVariable.material.uniforms['tf_water_to_world'] = {value: this.#plane_mesh.matrixWorld}
         heightmapVariable.material.defines.BOUNDS = BOUNDS.toFixed(1);
 
         const error = gpuCompute.init();

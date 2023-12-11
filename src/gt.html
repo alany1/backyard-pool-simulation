@@ -429,13 +429,13 @@
 
         scene.add( waterMesh );
 
-        // // THREE.Mesh just for mouse raycasting
-        // const geometryRay = new THREE.PlaneGeometry( BOUNDS, BOUNDS, 1, 1 );
-        // meshRay = new THREE.Mesh( geometryRay, new THREE.MeshBasicMaterial( { color: 0xFFFFFF, visible: false } ) );
-        // meshRay.rotation.x = - Math.PI / 2;
-        // meshRay.matrixAutoUpdate = false;
-        // meshRay.updateMatrix();
-        // scene.add( meshRay );
+        // THREE.Mesh just for mouse raycasting
+        const geometryRay = new THREE.PlaneGeometry( BOUNDS, BOUNDS, 1, 1 );
+        meshRay = new THREE.Mesh( geometryRay, new THREE.MeshBasicMaterial( { color: 0xFFFFFF, visible: false } ) );
+        meshRay.rotation.x = - Math.PI / 2;
+        meshRay.matrixAutoUpdate = false;
+        meshRay.updateMatrix();
+        scene.add( meshRay );
 
 
         // Creates the gpu computation class and sets it up
@@ -688,11 +688,12 @@
 
             raycaster.setFromCamera( mouseCoords, camera );
 
-            const intersects = 0// raycaster.intersectObject( meshRay );
+            const intersects = raycaster.intersectObject( meshRay );
 
             if ( intersects.length > 0 ) {
 
                 const point = intersects[ 0 ].point;
+                console.log( point );
                 uniforms[ 'mousePos' ].value.set( point.x, point.z );
 
             } else {

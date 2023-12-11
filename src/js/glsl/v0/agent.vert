@@ -1,7 +1,6 @@
 uniform sampler2D heightmap;
 
 uniform mat4 tf_agent_to_world;
-uniform mat4 tf_water_to_world;
 uniform float waterWidth;
 uniform float waterDepth;
 uniform float water_resting_height;
@@ -20,7 +19,7 @@ varying vec3 vNormal;
 
 void main() {
 
-    mat4 tf_agent_to_water = inverse(tf_water_to_world) * tf_agent_to_world;
+    mat4 tf_agent_to_water = tf_agent_to_world; // missing the height drop to water
 
     vec4 agent_to_water = tf_agent_to_water * vec4(position, 1.0);
 

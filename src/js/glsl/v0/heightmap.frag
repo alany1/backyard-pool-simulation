@@ -1,6 +1,8 @@
 
 #include <common>
 
+uniform mat4 tf_water_to_world;
+uniform vec3 agentPosition;
 uniform vec2 mousePos;
 uniform float mouseSize;
 uniform float viscosityConstant;
@@ -29,7 +31,22 @@ void main()	{
     float newHeight = ( ( north.x + south.x + east.x + west.x ) * 0.5 - heightmapValue.y ) * viscosityConstant;
 
     // Mouse influence
-    float mousePhase = clamp( length( ( uv - vec2( 0.5 ) ) * BOUNDS - vec2( mousePos.x, - mousePos.y ) ) * PI / mouseSize, 0.0, PI );
+
+//    vec4 agent_to_water = inverse(tf_agent_to_world) * vec4( agentPosition, 1.0 );
+    vec4 agent_to_water =  vec4( agentPosition, 1.0 );
+
+    // project agent position onto water plane.
+    // before: -BOUNDS to BOUNDS
+    // now in the range 0 to 1
+//    vec2 agent_uv = vec2((agent_to_water.x + BOUNDS) / (2.0 * BOUNDS), (agent_to_water.z + BOUNDS) / (2.0 * BOUNDS));
+    vec2 agent_uv = vec2((agent_to_water.x + BOUNDS / 2.0 )/ BOUNDS, (-agent_to_water.z + BOUNDS / 2.0) / BOUNDS);
+    // scale to (-BOUNDS/2, BOUNDS/2)
+    agent_uv = agent_uv * BOUNDS - vec2(BOUNDS / 2.0);
+
+
+    float mousePhase = clamp( length( ( uv - vec2( 0.5 ) ) * BOUNDS - vec2( agent_uv.x, agent_uv.y ) ) * PI / mouseSize, 0.0, PI );
+
+    // u and v from (0, 1) to (-BOUNDS/2, BOUNDS/2)
     newHeight += ( cos( mousePhase ) + 1.0 ) * 0.28;
 
     heightmapValue.y = heightmapValue.x;
