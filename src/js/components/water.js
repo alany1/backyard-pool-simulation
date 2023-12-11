@@ -1,22 +1,22 @@
 import {
-    Color,
-    WebGLRenderer,
-    Scene,
-    PerspectiveCamera,
-    Mesh,
-    SphereGeometry,
-    MeshMatcapMaterial,
-    PlaneGeometry,
-    ShaderMaterial,
-    AxesHelper,
-    Vector2,
-    ShaderChunk,
-    ShaderLib,
-    UniformsUtils,
-    HalfFloatType,
-    ClampToEdgeWrapping,
-    NearestFilter,
-    RGBAFormat, UnsignedByteType, WebGLRenderTarget, DirectionalLight,
+  Color,
+  WebGLRenderer,
+  Scene,
+  PerspectiveCamera,
+  Mesh,
+  SphereGeometry,
+  MeshMatcapMaterial,
+  PlaneGeometry,
+  ShaderMaterial,
+  AxesHelper,
+  Vector2,
+  ShaderChunk,
+  ShaderLib,
+  UniformsUtils,
+  HalfFloatType,
+  ClampToEdgeWrapping,
+  NearestFilter,
+  RGBAFormat, UnsignedByteType, WebGLRenderTarget, DirectionalLight, CubeTextureLoader,
 } from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'stats-js'
@@ -84,6 +84,18 @@ export default class MainScene {
         this.#stats = new Stats();
         container.appendChild(this.#stats.dom);
 
+        const cubeTextureLoader = new CubeTextureLoader();
+        cubeTextureLoader.setPath('textures/sky/');
+
+        const cubeTexture = cubeTextureLoader.load([
+          'px.jpg', 'nx.jpg',
+          'py.jpg', 'ny.jpg',
+          'pz.jpg', 'nz.jpg'
+        ]);
+
+        this.#scene.background = cubeTexture;
+
+
         this.setControls()
         this.setAxesHelper()
 
@@ -113,8 +125,8 @@ export default class MainScene {
     }
 
     render() {
-        const uniforms = heightmapVariable.material.uniforms;
-        uniforms['mousePos'].value.set(10000, 10000)
+        // const uniforms = heightmapVariable.material.uniforms;
+        // uniforms['mousePos'].value.set(10000, 10000)
 
         gpuCompute.compute();
         waterUniforms['heightmap'].value = gpuCompute.getCurrentRenderTarget(heightmapVariable).texture;
@@ -196,28 +208,28 @@ export default class MainScene {
         }
 
         // Create compute shader to smooth the water surface and velocity
-        smoothShader = gpuCompute.createShaderMaterial(smoothFragmentShader, {smoothTexture: {value: null}});
+        // smoothShader = gpuCompute.createShaderMaterial(smoothFragmentShader, {smoothTexture: {value: null}});
 
         // Create compute shader to read water level
-        readWaterLevelShader = gpuCompute.createShaderMaterial(readWaterLevelFragmentShader, {
-            point1: {value: new Vector2()},
-            levelTexture: {value: null}
-        });
-        readWaterLevelShader.defines.WIDTH = WIDTH.toFixed(1);
-        readWaterLevelShader.defines.BOUNDS = BOUNDS.toFixed(1);
-
-        // Create a 4x1 pixel image and a render target (Uint8, 4 channels, 1 byte per channel) to read water height and orientation
-        readWaterLevelImage = new Uint8Array(4 * 1 * 4);
+        // readWaterLevelShader = gpuCompute.createShaderMaterial(readWaterLevelFragmentShader, {
+        //     point1: {value: new Vector2()},
+        //     levelTexture: {value: null}
+        // });
+        // readWaterLevelShader.defines.WIDTH = WIDTH.toFixed(1);
+        // readWaterLevelShader.defines.BOUNDS = BOUNDS.toFixed(1);
         //
-        readWaterLevelRenderTarget = new WebGLRenderTarget(4, 1, {
-            wrapS: ClampToEdgeWrapping,
-            wrapT: ClampToEdgeWrapping,
-            minFilter: NearestFilter,
-            magFilter: NearestFilter,
-            format: RGBAFormat,
-            type: UnsignedByteType,
-            depthBuffer: false
-        });
+        // // Create a 4x1 pixel image and a render target (Uint8, 4 channels, 1 byte per channel) to read water height and orientation
+        // readWaterLevelImage = new Uint8Array(4 * 1 * 4);
+        // //
+        // readWaterLevelRenderTarget = new WebGLRenderTarget(4, 1, {
+        //     wrapS: ClampToEdgeWrapping,
+        //     wrapT: ClampToEdgeWrapping,
+        //     minFilter: NearestFilter,
+        //     magFilter: NearestFilter,
+        //     format: RGBAFormat,
+        //     type: UnsignedByteType,
+        //     depthBuffer: false
+        // });
 
     }
 

@@ -24,6 +24,7 @@ void main()	{
     vec4 west = texture2D( heightmap, uv + vec2( - cellSize.x, 0.0 ) );
 
     // https://web.archive.org/web/20080618181901/http://freespace.virgin.net/hugo.elias/graphics/x_water.htm
+    // Looks like here we are damping it by calculating the average of the neighbours and then subtracting the current height
 
     float newHeight = ( ( north.x + south.x + east.x + west.x ) * 0.5 - heightmapValue.y ) * viscosityConstant;
 
