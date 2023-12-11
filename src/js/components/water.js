@@ -23,7 +23,7 @@ import {
     CubeTextureLoader,
     Vector3,
     BoxGeometry,
-    MeshBasicMaterial, MeshPhysicalMaterial, DoubleSide, NormalBlending, TextureLoader,
+    MeshBasicMaterial, MeshPhysicalMaterial, DoubleSide, NormalBlending, TextureLoader, Sphere,
 } from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'stats-js'
@@ -35,6 +35,8 @@ import {GPUComputationRenderer} from "three/addons/misc/GPUComputationRenderer.j
 import smoothFragmentShader from '@/js/glsl/v0/smoothing.frag'
 import readWaterLevelFragmentShader from '@/js/glsl/v0/read_water_level.frag'
 import heightmapFragmentShader from '@/js/glsl/v0/heightmap.frag'
+import agentVertexShader from '@/js/glsl/v0/agent.vert'
+import agentFragmentShader from '@/js/glsl/v0/agent.frag'
 import {SimplexNoise} from 'three/addons/math/SimplexNoise.js';
 
 const simplex = new SimplexNoise();
@@ -44,6 +46,7 @@ const WIDTH = 128;
 // Water size in system units
 const BOUNDS = 512;
 let waterUniforms;
+let agentUniforms;
 let gpuCompute;
 let heightmapVariable;
 let smoothShader;
@@ -64,6 +67,7 @@ export default class MainScene {
     #mesh
     #cube_mesh
     #plane_mesh
+    #sphere;
 
     constructor() {
         this.#canvas = document.querySelector('.scene')
@@ -111,6 +115,7 @@ export default class MainScene {
         this.setWater()
         this.setGround()
         this.setWalls()
+        this.setAgent()
 
         // this.setContainer()
         /////////////////////////
@@ -132,7 +137,6 @@ export default class MainScene {
         requestAnimationFrame(this.animate);
 
         this.render();
-
         this.#stats.update();
     }
 
@@ -144,9 +148,43 @@ export default class MainScene {
         waterUniforms['heightmap'].value = gpuCompute.getCurrentRenderTarget(heightmapVariable).texture;
         waterUniforms['cameraPos'].value.copy(this.#camera.position);
 
+        // console.log(this.#sphere.matrixWorld)
+
+        agentUniforms['heightmap'].value = gpuCompute.getCurrentRenderTarget(heightmapVariable).texture;
+        agentUniforms['tf_agent_to_world'].value = this.#sphere.matrixWorld;
+        agentUniforms['tf_world_to_water'].value = this.#plane_mesh.matrixWorld;
+
       this.#renderer.render(this.#scene, this.#camera);
     }
 
+    setAgent() {
+        const geometry = new SphereGeometry( 10, 32, 32 );
+        // const material = new MeshBasicMaterial( {color: 0xffff00} );
+        const material = new ShaderMaterial({
+            uniforms: UniformsUtils.merge([
+                ShaderLib['phong'].uniforms,
+                {
+                    'heightmap': {value: null},
+                    'tf_agent_to_world': {value: null},
+                    'tf_world_to_water': {value: null},
+                    'waterWidth': {value: BOUNDS},
+                    'waterDepth': {value: BOUNDS},
+                    'water_resting_height': {value: -BOUNDS/16},
+                }
+            ]),
+            vertexShader: agentVertexShader,
+            fragmentShader: agentFragmentShader,
+        });
+
+        agentUniforms = material.uniforms;
+
+        this.#sphere = new Mesh( geometry, material );
+        this.#sphere.position.set(0, 0, 0)
+
+        this.#scene.add( this.#sphere );
+
+
+    }
     setLights() {
         const sun = new DirectionalLight(0xFFFFFF, 3.0);
         sun.position.set(300, 400, 175);
