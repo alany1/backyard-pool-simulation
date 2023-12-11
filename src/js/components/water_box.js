@@ -1,29 +1,29 @@
 import {
-    Color,
-    WebGLRenderer,
-    Scene,
-    PerspectiveCamera,
-    Mesh,
-    SphereGeometry,
-    MeshMatcapMaterial,
-    PlaneGeometry,
-    ShaderMaterial,
-    AxesHelper,
-    Vector2,
-    ShaderChunk,
-    ShaderLib,
-    UniformsUtils,
-    HalfFloatType,
-    ClampToEdgeWrapping,
-    NearestFilter,
-    RGBAFormat,
-    UnsignedByteType,
-    WebGLRenderTarget,
-    DirectionalLight,
-    CubeTextureLoader,
-    Vector3,
-    BoxGeometry,
-    MeshBasicMaterial, MeshPhysicalMaterial, DoubleSide, NormalBlending, TextureLoader,
+  Color,
+  WebGLRenderer,
+  Scene,
+  PerspectiveCamera,
+  Mesh,
+  SphereGeometry,
+  MeshMatcapMaterial,
+  PlaneGeometry,
+  ShaderMaterial,
+  AxesHelper,
+  Vector2,
+  ShaderChunk,
+  ShaderLib,
+  UniformsUtils,
+  HalfFloatType,
+  ClampToEdgeWrapping,
+  NearestFilter,
+  RGBAFormat,
+  UnsignedByteType,
+  WebGLRenderTarget,
+  DirectionalLight,
+  CubeTextureLoader,
+  Vector3,
+  BoxGeometry,
+  MeshBasicMaterial, MeshPhysicalMaterial, DoubleSide, NormalBlending,
 } from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'stats-js'
@@ -94,7 +94,7 @@ export default class MainScene {
         container.appendChild(this.#stats.dom);
 
         const cubeTextureLoader = new CubeTextureLoader();
-        cubeTextureLoader.setPath('textures/park/');
+        cubeTextureLoader.setPath('textures/sky/');
 
         const cubeTexture = cubeTextureLoader.load([
           'px.jpg', 'nx.jpg',
@@ -109,8 +109,6 @@ export default class MainScene {
         this.setAxesHelper()
 
         this.setWater()
-        this.setGround()
-        this.setWalls()
 
         // this.setContainer()
         /////////////////////////
@@ -159,72 +157,26 @@ export default class MainScene {
     }
 
 
-    setWalls() {
-        const texture = new TextureLoader().load('textures/pool_floor.jpg')
-        const geometry = new PlaneGeometry(BOUNDS, BOUNDS/2, WIDTH - 1, WIDTH - 1);
-        const material = new MeshBasicMaterial(
-            {
-                map: texture,
-                side: DoubleSide
-            }
-        )
-        const wall_1 = new Mesh( geometry, material );
-        wall_1.rotation.y = -Math.PI  / 2;
-        wall_1.position.x = -BOUNDS / 2;
-        wall_1.position.y = -BOUNDS / 4;
-
-        wall_1.matrixAutoUpdate = false;
-        wall_1.updateMatrix();
-
-        const wall_2 = new Mesh( geometry, material );
-        wall_2.rotation.y = -Math.PI  / 2;
-        wall_2.position.x = BOUNDS / 2;
-        wall_2.position.y = -BOUNDS / 4;
-
-        wall_2.matrixAutoUpdate = false;
-        wall_2.updateMatrix();
-
-        const wall_3 = new Mesh( geometry, material );
-        wall_3.position.z = -BOUNDS / 2;
-        wall_3.position.y = -BOUNDS / 4;
-
-        wall_3.matrixAutoUpdate = false;
-        wall_3.updateMatrix();
-        //
-        const wall_4 = new Mesh( geometry, material );
-        wall_4.position.z = BOUNDS / 2;
-        wall_4.position.y = -BOUNDS / 4;
-
-        wall_4.matrixAutoUpdate = false;
-        wall_4.updateMatrix();
-
-
-        this.#scene.add( wall_1 );
-        this.#scene.add( wall_2 );
-        this.#scene.add( wall_3 );
-        this.#scene.add( wall_4 );
+    setContainer() {
+      const geometry = new BoxGeometry( BOUNDS, 2*BOUNDS, BOUNDS );
+      // const material = new MeshBasicMaterial( {color: 0x00ff00} );
+      const material = new MeshPhysicalMaterial(
+        {
+          roughness: 0,
+          metalness: 0,
+          // color: 0xFFEA00,
+          transmission: 1.0
+        }
+      )
+      const cube = new Mesh( geometry, material );
+      cube.rotation.x = -Math.PI  / 2;
+      cube.matrixAutoUpdate = false;
+      cube.updateMatrix();
+      this.#scene.add( cube );
     }
-
-    setGround() {
-        const texture = new TextureLoader().load('textures/pool_wall_marble.jpg')
-        const geometry = new PlaneGeometry(BOUNDS, BOUNDS, WIDTH - 1, WIDTH - 1);
-        const material = new MeshBasicMaterial(
-            {
-            map: texture
-            }
-        )
-        const ground = new Mesh( geometry, material );
-        ground.rotation.x = -Math.PI  / 2;
-        ground.position.y = -BOUNDS / 2;
-
-        ground.matrixAutoUpdate = false;
-        ground.updateMatrix();
-        this.#scene.add( ground );
-    }
-
     setWater() {
         const materialColor = 0x0040C0;
-        const geometry = new PlaneGeometry(BOUNDS, BOUNDS, WIDTH - 1, WIDTH - 1);
+        const geometry = new BoxGeometry(BOUNDS, BOUNDS, BOUNDS);
         const material = new ShaderMaterial({
           uniforms: UniformsUtils.merge([
             ShaderLib['phong'].uniforms,
@@ -232,14 +184,14 @@ export default class MainScene {
               'heightmap': {value: null},
               'envMap': {value: this.#scene.background}, // Pass the cubemap here
               'cameraPos': {value: new Vector3()}, // Camera position
-              'reflectionStrength': { value: .6},
-              'transparency': {value: 0.8}
+              'reflectionStrength': { value: 0.8},
+              'transparency': {value: 0.5}
             }
           ]),
           transparent: true,
           blending: NormalBlending,
           vertexShader: waterVertexShader,
-          fragmentShader: waterFragmentShader,
+          fragmentShader: ShaderChunk['meshphong_frag'],
         });
 
         material.lights = true;
@@ -257,7 +209,6 @@ export default class MainScene {
 
         this.#plane_mesh = new Mesh(geometry, material);
         this.#plane_mesh.rotation.x = -Math.PI  / 2;
-        this.#plane_mesh.position.y = -BOUNDS / 16;
         this.#plane_mesh.matrixAutoUpdate = false;
         this.#plane_mesh.updateMatrix();
 
@@ -291,30 +242,6 @@ export default class MainScene {
             console.error(error);
 
         }
-
-        // Create compute shader to smooth the water surface and velocity
-        // smoothShader = gpuCompute.createShaderMaterial(smoothFragmentShader, {smoothTexture: {value: null}});
-
-        // Create compute shader to read water level
-        // readWaterLevelShader = gpuCompute.createShaderMaterial(readWaterLevelFragmentShader, {
-        //     point1: {value: new Vector2()},
-        //     levelTexture: {value: null}
-        // });
-        // readWaterLevelShader.defines.WIDTH = WIDTH.toFixed(1);
-        // readWaterLevelShader.defines.BOUNDS = BOUNDS.toFixed(1);
-        //
-        // // Create a 4x1 pixel image and a render target (Uint8, 4 channels, 1 byte per channel) to read water height and orientation
-        // readWaterLevelImage = new Uint8Array(4 * 1 * 4);
-        // //
-        // readWaterLevelRenderTarget = new WebGLRenderTarget(4, 1, {
-        //     wrapS: ClampToEdgeWrapping,
-        //     wrapT: ClampToEdgeWrapping,
-        //     minFilter: NearestFilter,
-        //     magFilter: NearestFilter,
-        //     format: RGBAFormat,
-        //     type: UnsignedByteType,
-        //     depthBuffer: false
-        // });
 
     }
 
@@ -369,7 +296,7 @@ export default class MainScene {
     }
 
     setAxesHelper() {
-        const axesHelper = new AxesHelper(100)
+        const axesHelper = new AxesHelper(3)
         this.#scene.add(axesHelper)
     }
 
