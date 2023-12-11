@@ -16,13 +16,14 @@ import {
   HalfFloatType,
   ClampToEdgeWrapping,
   NearestFilter,
-  RGBAFormat, UnsignedByteType, WebGLRenderTarget, DirectionalLight, CubeTextureLoader,
+  RGBAFormat, UnsignedByteType, WebGLRenderTarget, DirectionalLight, CubeTextureLoader, Vector3,
 } from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'stats-js'
 import LoaderManager from '@/js/managers/LoaderManager'
 import GUI from 'lil-gui'
 import waterVertexShader from '@/js/glsl/v0/water.vert'
+import waterFragmentShader from '@/js/glsl/v0/water.frag'
 import {GPUComputationRenderer} from "three/addons/misc/GPUComputationRenderer.js";
 import smoothFragmentShader from '@/js/glsl/v0/smoothing.frag'
 import readWaterLevelFragmentShader from '@/js/glsl/v0/read_water_level.frag'
@@ -130,7 +131,9 @@ export default class MainScene {
 
         gpuCompute.compute();
         waterUniforms['heightmap'].value = gpuCompute.getCurrentRenderTarget(heightmapVariable).texture;
-        this.#renderer.render(this.#scene, this.#camera);
+        waterUniforms['cameraPos'].value.copy(this.#camera.position);
+
+      this.#renderer.render(this.#scene, this.#camera);
     }
 
     setLights() {
@@ -148,14 +151,17 @@ export default class MainScene {
         const materialColor = 0x0040C0;
         const geometry = new PlaneGeometry(BOUNDS, BOUNDS, WIDTH - 1, WIDTH - 1);
         const material = new ShaderMaterial({
-            uniforms: UniformsUtils.merge([
-                ShaderLib['phong'].uniforms,
-                {
-                    'heightmap': {value: null}
-                }
-            ]),
+          uniforms: UniformsUtils.merge([
+            ShaderLib['phong'].uniforms,
+            {
+              'heightmap': {value: null},
+              'envMap': {value: this.#scene.background}, // Pass the cubemap here
+              'cameraPos': {value: new Vector3()}, // Camera position
+              'reflectionStrength': { value: 0.8 }
+            }
+          ]),
             vertexShader: waterVertexShader,
-            fragmentShader: ShaderChunk['meshphong_frag']
+            fragmentShader: waterFragmentShader
         });
 
         material.lights = true;
@@ -172,7 +178,7 @@ export default class MainScene {
         waterUniforms = material.uniforms;
 
         this.#plane_mesh = new Mesh(geometry, material);
-        this.#plane_mesh.rotation.x = -Math.PI / 2;
+        this.#plane_mesh.rotation.x = -Math.PI  / 2;
         this.#plane_mesh.matrixAutoUpdate = false;
         this.#plane_mesh.updateMatrix();
 

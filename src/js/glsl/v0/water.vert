@@ -1,8 +1,10 @@
 uniform sampler2D heightmap;
-
+varying vec3 vPosition;
+varying vec3 vWorldPosition;
 #define PHONG
 
 varying vec3 vViewPosition;
+varying vec3 vWorldNormal;
 
 #ifndef FLAT_SHADED
 
@@ -36,6 +38,8 @@ void main() {
         1.0 );
     //<beginnormal_vertex>
 
+    vWorldNormal = normalize(mat3(modelMatrix) * objectNormal);
+
     #include <morphnormal_vertex>
     #include <skinbase_vertex>
     #include <skinnormal_vertex>
@@ -64,5 +68,8 @@ void main() {
     #include <worldpos_vertex>
     #include <envmap_vertex>
     #include <shadowmap_vertex>
+
+    vPosition = position;
+    vWorldPosition = (mat3(modelMatrix) * position);
 
 }
