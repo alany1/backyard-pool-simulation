@@ -79,7 +79,7 @@ export default class MainScene {
         document.body.appendChild(container)
 
         this.#camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 3000);
-        this.#camera.position.set(0, 200, 350)
+        this.#camera.position.set(350, 400, -500)
         this.#camera.lookAt(0, 0, 0)
 
         this.#scene = new Scene()
