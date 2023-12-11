@@ -150,20 +150,21 @@ export default class MainScene {
     }
 
     stepAgent(deltaTime) {
-        // move in circle of radius BOUNDS/4 every second
-        const radius = BOUNDS/4;
-        const speed = 2 * Math.PI * radius;
-        const deltaAngle = speed * deltaTime / radius;
+        // move in a circle of radius BOUNDS/4
+        const radius = BOUNDS / 4;
 
-        // const angle = Math.atan(this.#sphere.position.z / this.#sphere.position.x) + deltaAngle;
+        const speed = 2 * Math.PI * radius / 2; // Circumference = 2 * pi * radius
+        this.currentAngle = (this.currentAngle || 0) + (speed * deltaTime) / radius;
 
-        // const x = radius * Math.cos(angle);
-        // const z = radius * Math.sin(angle);
-        this.#sphere.position.x += deltaAngle;
-        this.#sphere.position.z += deltaAngle;
-        // this.#sphere.updateMatrix();
+        // Calculate the new x and z positions based on the angle
+        const x = radius * Math.cos(this.currentAngle);
+        const z = radius * Math.sin(this.currentAngle);
 
+        // Update the position of the sphere
+        this.#sphere.position.x = x;
+        this.#sphere.position.z = z;
     }
+
 
     render() {
         // const uniforms = heightmapVariable.material.uniforms;
