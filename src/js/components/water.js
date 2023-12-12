@@ -84,7 +84,7 @@ export default class MainScene {
     #sphere;
     #gui
     #settings
-    #controls_on = true;
+    #controls_on = false;
 
     constructor() {
         this.#canvas = document.querySelector('.scene')
@@ -100,7 +100,7 @@ export default class MainScene {
         document.body.appendChild(container)
 
         this.#camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 3000);
-        this.#camera.position.set(350, 400, -500)
+        this.#camera.position.set(700, 300, -500)
         this.#camera.lookAt(0, 0, 0)
 
         this.#scene = new Scene()
@@ -469,7 +469,7 @@ export default class MainScene {
 
         heightmapVariable.material.uniforms['mousePos'] = {value: new Vector2(10000, 10000)};
         heightmapVariable.material.uniforms['mouseSize'] = {value: 20.0};
-        heightmapVariable.material.uniforms['viscosityConstant'] = {value: 0.98};
+        heightmapVariable.material.uniforms['viscosityConstant'] = {value: 0.99};
         heightmapVariable.material.uniforms['heightCompensation'] = {value: 0};
         heightmapVariable.material.uniforms['agentPosition'] = {value: this.#sphere.position};
         heightmapVariable.material.uniforms['tf_water_to_world'] = {value: this.#plane_mesh.matrixWorld}
@@ -485,7 +485,7 @@ export default class MainScene {
 
     fillTexture = (texture) => {
 
-        const waterMaxHeight = 10;
+        const waterMaxHeight = 20;
 
         function noise(x, y) {
 
@@ -533,7 +533,7 @@ export default class MainScene {
 
         this.#gui = new GUI();
         this.#settings = {
-            controls: true,
+            controls: false,
         };
 
         this.#gui.add(this.#settings, 'controls').name('Toggle Controls (WASD / R)').onChange((value) => {
