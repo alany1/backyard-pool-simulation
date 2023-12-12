@@ -44,7 +44,6 @@ import readWaterLevelFragmentShader from '@/js/glsl/v0/read_water_level.frag'
 import heightmapFragmentShader from '@/js/glsl/v0/heightmap.frag'
 import agentVertexShader from '@/js/glsl/v0/agent.vert'
 import agentFragmentShader from '@/js/glsl/v0/agent.frag'
-import debugVertexShader from '@/js/glsl/v0/debug.vert'
 import {SimplexNoise} from 'three/addons/math/SimplexNoise.js';
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader.js";
 import meshPhongNodeMaterial from "three/addons/nodes/materials/MeshPhongNodeMaterial.js";
@@ -163,7 +162,7 @@ export default class MainScene {
         // move in a circle of radius BOUNDS/4
         const radius = BOUNDS / 4;
 
-        const speed = 0 //2 * Math.PI * radius / 2; // Circumference = 2 * pi * radius
+        const speed = 2 * Math.PI * radius / 2; // Circumference = 2 * pi * radius
         this.currentAngle = (this.currentAngle || 0) + (speed * deltaTime) / radius;
 
         // Calculate the new x and z positions based on the angle
@@ -232,7 +231,7 @@ export default class MainScene {
 
 
     async setAgent() {
-        const materialColor = 0x0040C0;
+        const materialColor = 0xFFD801;
         // const geometry = new SphereGeometry( 10, 32, 32 );
         // const geometry = new TorusGeometry( 10, 3, 16, 100 );
         // // const material = new MeshBasicMaterial( {color: 0xffff00} );
