@@ -1,36 +1,36 @@
 import {
-  Color,
-  WebGLRenderer,
-  Scene,
-  PerspectiveCamera,
-  Mesh,
-  SphereGeometry,
-  MeshMatcapMaterial,
-  PlaneGeometry,
-  ShaderMaterial,
-  AxesHelper,
-  Vector2,
-  ShaderChunk,
-  ShaderLib,
-  UniformsUtils,
-  HalfFloatType,
-  ClampToEdgeWrapping,
-  NearestFilter,
-  RGBAFormat,
-  UnsignedByteType,
-  WebGLRenderTarget,
-  DirectionalLight,
-  CubeTextureLoader,
-  Vector3,
-  BoxGeometry,
-  MeshBasicMaterial,
-  MeshPhysicalMaterial,
-  DoubleSide,
-  NormalBlending,
-  TextureLoader,
-  Sphere,
-  TorusGeometry,
-  MeshPhongMaterial,
+    Color,
+    WebGLRenderer,
+    Scene,
+    PerspectiveCamera,
+    Mesh,
+    SphereGeometry,
+    MeshMatcapMaterial,
+    PlaneGeometry,
+    ShaderMaterial,
+    AxesHelper,
+    Vector2,
+    ShaderChunk,
+    ShaderLib,
+    UniformsUtils,
+    HalfFloatType,
+    ClampToEdgeWrapping,
+    NearestFilter,
+    RGBAFormat,
+    UnsignedByteType,
+    WebGLRenderTarget,
+    DirectionalLight,
+    CubeTextureLoader,
+    Vector3,
+    BoxGeometry,
+    MeshBasicMaterial,
+    MeshPhysicalMaterial,
+    DoubleSide,
+    NormalBlending,
+    TextureLoader,
+    Sphere,
+    TorusGeometry,
+    MeshPhongMaterial,
 } from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'stats-js'
@@ -87,7 +87,7 @@ export default class MainScene {
 
         this.animate = this.animate.bind(this);
 
-      this.init()
+        this.init()
     }
 
     async init() {
@@ -114,9 +114,9 @@ export default class MainScene {
         cubeTextureLoader.setPath('textures/park/');
 
         const cubeTexture = cubeTextureLoader.load([
-          'px.jpg', 'nx.jpg',
-          'py.jpg', 'ny.jpg',
-          'pz.jpg', 'nz.jpg'
+            'px.jpg', 'nx.jpg',
+            'py.jpg', 'ny.jpg',
+            'pz.jpg', 'nz.jpg'
         ]);
 
         this.#scene.background = cubeTexture;
@@ -191,49 +191,50 @@ export default class MainScene {
         agentUniforms['heightmap'].value = gpuCompute.getCurrentRenderTarget(heightmapVariable).texture;
         agentUniforms['tf_agent_to_world'].value = this.#sphere.matrixWorld;
 
-      this.#renderer.render(this.#scene, this.#camera);
+        this.#renderer.render(this.#scene, this.#camera);
         console.log('done')
     }
+
     loadModel(material) {
-      return new Promise((resolve, reject) => {
-        const loader = new OBJLoader();
-        loader.load(
-          'textures/Duck.obj', // Path to the OBJ file
-          (obj) => {
-            // Assuming the model is a single object
-            const model = obj.children[0];
+        return new Promise((resolve, reject) => {
+            const loader = new OBJLoader();
+            loader.load(
+                'textures/Duck.obj', // Path to the OBJ file
+                (obj) => {
+                    // Assuming the model is a single object
+                    const model = obj.children[0];
 
-            // Apply any initial transformations
-            model.position.set(0, 0, 0);
-            model.scale.set(10, 10, 10);  // Set scale if needed
-            // this.#sphere.rotation.y = -Math.pi / 2;  // Set rotation if needed
+                    // Apply any initial transformations
+                    model.position.set(0, 0, 0);
+                    model.scale.set(10, 10, 10);  // Set scale if needed
+                    // this.#sphere.rotation.y = -Math.pi / 2;  // Set rotation if needed
 
-            // Replace this.#sphere with the loaded model
-            this.#sphere = model;
-            this.#sphere.updateMatrix()
+                    // Replace this.#sphere with the loaded model
+                    this.#sphere = model;
+                    this.#sphere.updateMatrix()
 
-            // Change material
-            this.#sphere.material = material;
+                    // Change material
+                    this.#sphere.material = material;
 
-            // Add the model to the scene
-            this.#scene.add(this.#sphere);
+                    // Add the model to the scene
+                    this.#scene.add(this.#sphere);
 
-            resolve(model); // Resolve the Promise with the loaded model
-          },
-          undefined, // Function called when download is in progress
-          (error) => {
-            console.error('An error happened', error);
-            reject(error); // Reject the Promise on error
-          }
-        );
-      });
+                    resolve(model); // Resolve the Promise with the loaded model
+                },
+                undefined, // Function called when download is in progress
+                (error) => {
+                    console.error('An error happened', error);
+                    reject(error); // Reject the Promise on error
+                }
+            );
+        });
     }
 
 
     async setAgent() {
         const materialColor = 0x0040C0;
         // const geometry = new SphereGeometry( 10, 32, 32 );
-      // const geometry = new TorusGeometry( 10, 3, 16, 100 );
+        // const geometry = new TorusGeometry( 10, 3, 16, 100 );
         // // const material = new MeshBasicMaterial( {color: 0xffff00} );
         const material = new ShaderMaterial({
             uniforms: UniformsUtils.merge([
@@ -243,36 +244,35 @@ export default class MainScene {
                     'tf_agent_to_world': {value: null},
                     'waterWidth': {value: BOUNDS},
                     'waterDepth': {value: BOUNDS},
-                    'water_resting_height': {value: -BOUNDS/16},
+                    'water_resting_height': {value: -BOUNDS / 16},
                 }
             ]),
             vertexShader: agentVertexShader,
-            fragmentShader: ShaderChunk[ 'meshphong_frag' ],
+            fragmentShader: ShaderChunk['meshphong_frag'],
         });
 
         material.lights = true;
-        material.uniforms[ 'diffuse' ].value = new Color( materialColor );
-        material.uniforms[ 'specular' ].value = new Color( 0x111111 );
-        material.uniforms[ 'shininess' ].value = Math.max( 50, 1e-4 );
-        material.uniforms[ 'opacity' ].value = material.opacity;
-      material.defines.WIDTH = WIDTH.toFixed(1);
-      material.defines.BOUNDS = BOUNDS.toFixed(1);
+        material.uniforms['diffuse'].value = new Color(materialColor);
+        material.uniforms['specular'].value = new Color(0x111111);
+        material.uniforms['shininess'].value = Math.max(50, 1e-4);
+        material.uniforms['opacity'].value = material.opacity;
+        material.defines.WIDTH = WIDTH.toFixed(1);
+        material.defines.BOUNDS = BOUNDS.toFixed(1);
         agentUniforms = material.uniforms;
 
-      const phongMaterial = new MeshPhongMaterial({
-        color: 0xaaaaaa,
-        specular: 0x111111,
-        shininess: 30
-      });
+        const phongMaterial = new MeshPhongMaterial({
+            color: 0xaaaaaa,
+            specular: 0x111111,
+            shininess: 30
+        });
         //
 
         try {
-          await this.loadModel(material);
-          console.log('Model loaded')
-          console.log(this.#sphere.position)
-        }
-        catch (error) {
-          console.error(error);
+            await this.loadModel(material);
+            console.log('Model loaded')
+            console.log(this.#sphere.position)
+        } catch (error) {
+            console.error(error);
         }
 
         console.log(this.#sphere.position)
@@ -284,6 +284,7 @@ export default class MainScene {
         // this.#scene.add( this.#sphere );
 
     }
+
     setLights() {
         const sun = new DirectionalLight(0xFFFFFF, 3.0);
         sun.position.set(300, 400, 175);
@@ -298,37 +299,37 @@ export default class MainScene {
 
     setWalls() {
         const texture = new TextureLoader().load('textures/pool_floor.jpg')
-        const geometry = new PlaneGeometry(BOUNDS, BOUNDS/2, WIDTH - 1, WIDTH - 1);
+        const geometry = new PlaneGeometry(BOUNDS, BOUNDS / 2, WIDTH - 1, WIDTH - 1);
         const material = new MeshBasicMaterial(
             {
                 map: texture,
                 side: DoubleSide
             }
         )
-        const wall_1 = new Mesh( geometry, material );
-        wall_1.rotation.y = -Math.PI  / 2;
+        const wall_1 = new Mesh(geometry, material);
+        wall_1.rotation.y = -Math.PI / 2;
         wall_1.position.x = -BOUNDS / 2;
         wall_1.position.y = -BOUNDS / 4;
 
         wall_1.matrixAutoUpdate = false;
         wall_1.updateMatrix();
 
-        const wall_2 = new Mesh( geometry, material );
-        wall_2.rotation.y = -Math.PI  / 2;
+        const wall_2 = new Mesh(geometry, material);
+        wall_2.rotation.y = -Math.PI / 2;
         wall_2.position.x = BOUNDS / 2;
         wall_2.position.y = -BOUNDS / 4;
 
         wall_2.matrixAutoUpdate = false;
         wall_2.updateMatrix();
 
-        const wall_3 = new Mesh( geometry, material );
+        const wall_3 = new Mesh(geometry, material);
         wall_3.position.z = -BOUNDS / 2;
         wall_3.position.y = -BOUNDS / 4;
 
         wall_3.matrixAutoUpdate = false;
         wall_3.updateMatrix();
         //
-        const wall_4 = new Mesh( geometry, material );
+        const wall_4 = new Mesh(geometry, material);
         wall_4.position.z = BOUNDS / 2;
         wall_4.position.y = -BOUNDS / 4;
 
@@ -336,10 +337,10 @@ export default class MainScene {
         wall_4.updateMatrix();
 
 
-        this.#scene.add( wall_1 );
-        this.#scene.add( wall_2 );
-        this.#scene.add( wall_3 );
-        this.#scene.add( wall_4 );
+        this.#scene.add(wall_1);
+        this.#scene.add(wall_2);
+        this.#scene.add(wall_3);
+        this.#scene.add(wall_4);
     }
 
     setGround() {
@@ -347,38 +348,38 @@ export default class MainScene {
         const geometry = new PlaneGeometry(BOUNDS, BOUNDS, WIDTH - 1, WIDTH - 1);
         const material = new MeshBasicMaterial(
             {
-            map: texture
+                map: texture
             }
         )
-        const ground = new Mesh( geometry, material );
-        ground.rotation.x = -Math.PI  / 2;
+        const ground = new Mesh(geometry, material);
+        ground.rotation.x = -Math.PI / 2;
         ground.position.y = -BOUNDS / 2;
 
         ground.matrixAutoUpdate = false;
         ground.updateMatrix();
-        this.#scene.add( ground );
+        this.#scene.add(ground);
     }
 
     setWater() {
         const materialColor = 0x0040C0;
         const geometry = new PlaneGeometry(BOUNDS, BOUNDS, WIDTH - 1, WIDTH - 1);
         const material = new ShaderMaterial({
-          uniforms: UniformsUtils.merge([
-            ShaderLib['phong'].uniforms,
-              {
-                  'heightmap': {value: null},
-                  'envMap': {value: this.#scene.background}, // Pass the cubemap here
-                  'cameraPos': {value: new Vector3()}, // Camera position
-                  'reflectionStrength': {value: .6},
-                  'transparency': {value: 0.8},
-                  'agentPosition': {value: null},
-                  'tf_agent_to_world': {value: null},
-              }
-          ]),
-          transparent: true,
-          blending: NormalBlending,
-          vertexShader: waterVertexShader,
-          fragmentShader: waterFragmentShader,
+            uniforms: UniformsUtils.merge([
+                ShaderLib['phong'].uniforms,
+                {
+                    'heightmap': {value: null},
+                    'envMap': {value: this.#scene.background}, // Pass the cubemap here
+                    'cameraPos': {value: new Vector3()}, // Camera position
+                    'reflectionStrength': {value: .6},
+                    'transparency': {value: 0.8},
+                    'agentPosition': {value: null},
+                    'tf_agent_to_world': {value: null},
+                }
+            ]),
+            transparent: true,
+            blending: NormalBlending,
+            vertexShader: waterVertexShader,
+            fragmentShader: waterFragmentShader,
         });
 
         material.lights = true;
@@ -395,7 +396,7 @@ export default class MainScene {
         waterUniforms = material.uniforms;
 
         this.#plane_mesh = new Mesh(geometry, material);
-        this.#plane_mesh.rotation.x = -Math.PI  / 2;
+        this.#plane_mesh.rotation.x = -Math.PI / 2;
         this.#plane_mesh.position.y = -BOUNDS / 16;
         this.#plane_mesh.matrixAutoUpdate = false;
         this.#plane_mesh.updateMatrix();
