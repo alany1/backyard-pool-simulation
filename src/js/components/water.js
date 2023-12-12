@@ -31,6 +31,7 @@ import {
     Sphere,
     TorusGeometry,
     MeshPhongMaterial,
+    Quaternion,
 } from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'stats-js'
@@ -65,7 +66,8 @@ let readWaterLevelImage;
 let readWaterLevelRenderTarget;
 let lastTimestamp = performance.now();
 let deltaTime = 0;
-
+let xSpeed = 0.1;
+let ySpeed = 10;
 
 export default class MainScene {
     #canvas
@@ -129,7 +131,7 @@ export default class MainScene {
         this.setGround()
         this.setWalls()
 
-        // this.setContainer()
+        this.setListeners()
         /////////////////////////
 
         this.handleResize()
@@ -139,10 +141,6 @@ export default class MainScene {
         this.animate()
     }
 
-    /**
-     * Our Webgl renderer, an object that will draw everything in our canvas
-     * https://threejs.org/docs/?q=rend#api/en/renderers/WebGLRenderer
-     */
 
     animate() {
 
@@ -152,7 +150,7 @@ export default class MainScene {
         deltaTime = (currentTimestamp - lastTimestamp) / 1000; // Convert to seconds
         lastTimestamp = currentTimestamp;
 
-        this.stepAgent(deltaTime);
+        // this.stepAgent(deltaTime);
 
         this.render();
         this.#stats.update();
@@ -189,6 +187,7 @@ export default class MainScene {
 
         agentUniforms['heightmap'].value = gpuCompute.getCurrentRenderTarget(heightmapVariable).texture;
         agentUniforms['tf_agent_to_world'].value = this.#sphere.matrixWorld;
+        agentUniforms['tf_water_to_world'].value = this.#plane_mesh.matrixWorld;
 
         this.#renderer.render(this.#scene, this.#camera);
         console.log('done')
@@ -210,6 +209,7 @@ export default class MainScene {
 
                     // Replace this.#sphere with the loaded model
                     this.#sphere = model;
+                    // this.#sphere.matrixAutoUpdate = false;
                     this.#sphere.updateMatrix()
 
                     // Change material
@@ -241,6 +241,7 @@ export default class MainScene {
                 {
                     'heightmap': {value: null},
                     'tf_agent_to_world': {value: null},
+                    'tf_water_to_world': {value: null},
                     'waterWidth': {value: BOUNDS},
                     'waterDepth': {value: BOUNDS},
                     'water_resting_height': {value: -BOUNDS / 16},
@@ -282,6 +283,40 @@ export default class MainScene {
         //
         // this.#scene.add( this.#sphere );
 
+    }
+    setListeners() {
+        document.addEventListener("keydown", (event) => this.onDocumentKeyDown(event), false);
+    }
+
+    onDocumentKeyDown(event) {
+        var keyCode = event.which;
+
+        const forward = this.getHeading();
+
+        console.log('yo')
+        if (keyCode == 87) { // w
+            this.#sphere.position.x += forward.x * ySpeed;
+            this.#sphere.position.z += forward.z * ySpeed;
+        } else if (keyCode == 83) { // s
+            this.#sphere.position.x -= forward.x * ySpeed;
+            this.#sphere.position.z -= forward.z * ySpeed;
+        } else if (keyCode == 65) { // a
+            this.#sphere.rotation.y += xSpeed;
+        } else if (keyCode == 68) { // d
+            this.#sphere.rotation.y -= xSpeed;
+        } else if (keyCode == 82) { // r (reset)
+            this.#sphere.position.set(0, 0, 0);
+        }
+    };
+
+    getHeading() {
+        let yRotation = this.#sphere.rotation.y;
+        let forward = new Vector3(0, 0, 1);
+        let quaternion = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), yRotation);
+
+        forward.applyQuaternion(quaternion);
+
+        return forward;
     }
 
     setLights() {
