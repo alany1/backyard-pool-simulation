@@ -1,29 +1,36 @@
 import {
-    Color,
-    WebGLRenderer,
-    Scene,
-    PerspectiveCamera,
-    Mesh,
-    SphereGeometry,
-    MeshMatcapMaterial,
-    PlaneGeometry,
-    ShaderMaterial,
-    AxesHelper,
-    Vector2,
-    ShaderChunk,
-    ShaderLib,
-    UniformsUtils,
-    HalfFloatType,
-    ClampToEdgeWrapping,
-    NearestFilter,
-    RGBAFormat,
-    UnsignedByteType,
-    WebGLRenderTarget,
-    DirectionalLight,
-    CubeTextureLoader,
-    Vector3,
-    BoxGeometry,
-    MeshBasicMaterial, MeshPhysicalMaterial, DoubleSide, NormalBlending, TextureLoader, Sphere,
+  Color,
+  WebGLRenderer,
+  Scene,
+  PerspectiveCamera,
+  Mesh,
+  SphereGeometry,
+  MeshMatcapMaterial,
+  PlaneGeometry,
+  ShaderMaterial,
+  AxesHelper,
+  Vector2,
+  ShaderChunk,
+  ShaderLib,
+  UniformsUtils,
+  HalfFloatType,
+  ClampToEdgeWrapping,
+  NearestFilter,
+  RGBAFormat,
+  UnsignedByteType,
+  WebGLRenderTarget,
+  DirectionalLight,
+  CubeTextureLoader,
+  Vector3,
+  BoxGeometry,
+  MeshBasicMaterial,
+  MeshPhysicalMaterial,
+  DoubleSide,
+  NormalBlending,
+  TextureLoader,
+  Sphere,
+  TorusGeometry,
+  MeshPhongMaterial,
 } from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'stats-js'
@@ -37,7 +44,10 @@ import readWaterLevelFragmentShader from '@/js/glsl/v0/read_water_level.frag'
 import heightmapFragmentShader from '@/js/glsl/v0/heightmap.frag'
 import agentVertexShader from '@/js/glsl/v0/agent.vert'
 import agentFragmentShader from '@/js/glsl/v0/agent.frag'
+import debugVertexShader from '@/js/glsl/v0/debug.vert'
 import {SimplexNoise} from 'three/addons/math/SimplexNoise.js';
+import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader.js";
+import meshPhongNodeMaterial from "three/addons/nodes/materials/MeshPhongNodeMaterial.js";
 
 const simplex = new SimplexNoise();
 
@@ -77,10 +87,10 @@ export default class MainScene {
 
         this.animate = this.animate.bind(this);
 
-        this.init()
+      this.init()
     }
 
-    init() {
+    async init() {
 
         let container = document.createElement('div');
         document.body.appendChild(container)
@@ -115,7 +125,7 @@ export default class MainScene {
         this.setControls()
         this.setAxesHelper()
 
-        this.setAgent()
+        await this.setAgent()
         this.setWater()
         this.setGround()
         this.setWalls()
@@ -153,7 +163,7 @@ export default class MainScene {
         // move in a circle of radius BOUNDS/4
         const radius = BOUNDS / 4;
 
-        const speed = 2 * Math.PI * radius / 2; // Circumference = 2 * pi * radius
+        const speed = 0 //2 * Math.PI * radius / 2; // Circumference = 2 * pi * radius
         this.currentAngle = (this.currentAngle || 0) + (speed * deltaTime) / radius;
 
         // Calculate the new x and z positions based on the angle
@@ -169,7 +179,6 @@ export default class MainScene {
     render() {
         // const uniforms = heightmapVariable.material.uniforms;
         // uniforms['mousePos'].value.set(10000, 10000)
-
         gpuCompute.compute();
         waterUniforms['heightmap'].value = gpuCompute.getCurrentRenderTarget(heightmapVariable).texture;
         waterUniforms['cameraPos'].value.copy(this.#camera.position);
@@ -182,15 +191,50 @@ export default class MainScene {
         agentUniforms['heightmap'].value = gpuCompute.getCurrentRenderTarget(heightmapVariable).texture;
         agentUniforms['tf_agent_to_world'].value = this.#sphere.matrixWorld;
 
-        console.log(this.#sphere.position)
-        console.log(this.#plane_mesh.matrixWorld)
-
       this.#renderer.render(this.#scene, this.#camera);
+        console.log('done')
+    }
+    loadModel(material) {
+      return new Promise((resolve, reject) => {
+        const loader = new OBJLoader();
+        loader.load(
+          'textures/Duck.obj', // Path to the OBJ file
+          (obj) => {
+            // Assuming the model is a single object
+            const model = obj.children[0];
+
+            // Apply any initial transformations
+            model.position.set(0, 0, 0);
+            model.scale.set(10, 10, 10);  // Set scale if needed
+            // this.#sphere.rotation.y = -Math.pi / 2;  // Set rotation if needed
+
+            // Replace this.#sphere with the loaded model
+            this.#sphere = model;
+            this.#sphere.updateMatrix()
+
+            // Change material
+            this.#sphere.material = material;
+
+            // Add the model to the scene
+            this.#scene.add(this.#sphere);
+
+            resolve(model); // Resolve the Promise with the loaded model
+          },
+          undefined, // Function called when download is in progress
+          (error) => {
+            console.error('An error happened', error);
+            reject(error); // Reject the Promise on error
+          }
+        );
+      });
     }
 
-    setAgent() {
-        const geometry = new SphereGeometry( 10, 32, 32 );
-        // const material = new MeshBasicMaterial( {color: 0xffff00} );
+
+    async setAgent() {
+
+        // const geometry = new SphereGeometry( 10, 32, 32 );
+      // const geometry = new TorusGeometry( 10, 3, 16, 100 );
+        // // const material = new MeshBasicMaterial( {color: 0xffff00} );
         const material = new ShaderMaterial({
             uniforms: UniformsUtils.merge([
                 ShaderLib['phong'].uniforms,
@@ -204,15 +248,36 @@ export default class MainScene {
             ]),
             vertexShader: agentVertexShader,
             fragmentShader: agentFragmentShader,
+            // fragmentShader: ShaderChunk[ 'meshphong_frag' ],
         });
 
+      material.defines.WIDTH = WIDTH.toFixed(1);
+      material.defines.BOUNDS = BOUNDS.toFixed(1);
+
+      const phongMaterial = new MeshPhongMaterial({
+        color: 0xaaaaaa,
+        specular: 0x111111,
+        shininess: 30
+      });
+        //
         agentUniforms = material.uniforms;
 
-        this.#sphere = new Mesh( geometry, material );
-        this.#sphere.position.set(0, 0, 0)
+        try {
+          await this.loadModel(material);
+          console.log('Model loaded')
+          console.log(this.#sphere.position)
+        }
+        catch (error) {
+          console.error(error);
+        }
 
-        this.#scene.add( this.#sphere );
-
+        console.log(this.#sphere.position)
+        //
+        // this.#sphere = new Mesh( geometry, material );
+        // this.#sphere.position.set(0, 0, 0)
+        // this.#sphere.rotation.y = -Math.PI / 2;
+        //
+        // this.#scene.add( this.#sphere );
 
     }
     setLights() {
