@@ -47,8 +47,12 @@ void main()	{
     float mousePhase = clamp( length( ( uv - vec2( 0.5 ) ) * BOUNDS - vec2( agent_uv.x, agent_uv.y ) ) * PI / mouseSize, 0.0, PI );
 
     // u and v from (0, 1) to (-BOUNDS/2, BOUNDS/2)
-    newHeight -= ( cos( mousePhase ) + 1.0 ) * 0.28;
-
+    if (-10.0 <= agentPosition.z && agentPosition.z <= 10.0) {
+        newHeight -= 0.0;
+    }
+    else {
+        newHeight -= (cos(mousePhase) + 1.0) * 0.2;
+    }
     heightmapValue.y = heightmapValue.x;
     heightmapValue.x = newHeight;
 

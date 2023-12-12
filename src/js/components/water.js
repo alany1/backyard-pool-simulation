@@ -82,6 +82,9 @@ export default class MainScene {
     #cube_mesh
     #plane_mesh
     #sphere;
+    #gui
+    #settings
+    #controls_on = false;
 
     constructor() {
         this.#canvas = document.querySelector('.scene')
@@ -150,26 +153,29 @@ export default class MainScene {
         deltaTime = (currentTimestamp - lastTimestamp) / 1000; // Convert to seconds
         lastTimestamp = currentTimestamp;
 
-        // this.stepAgent(deltaTime);
+        if (!this.#controls_on) {
+            this.stepAgent(deltaTime);
+        }
 
         this.render();
         this.#stats.update();
     }
 
     stepAgent(deltaTime) {
-        // move in a circle of radius BOUNDS/4
         const radius = BOUNDS / 4;
 
-        const speed = 2 * Math.PI * radius / 2; // Circumference = 2 * pi * radius
-        this.currentAngle = (this.currentAngle || 0) + (speed * deltaTime) / radius;
+        const speed = 2 * Math.PI * radius / 2;
 
-        // Calculate the new x and z positions based on the angle
+        this.currentAngle = (this.currentAngle || 0) + (speed * deltaTime) / radius;
+        this.currentAngle = this.currentAngle % (2 * Math.PI);
+
         const x = radius * Math.cos(this.currentAngle);
         const z = radius * Math.sin(this.currentAngle);
 
-        // Update the position of the sphere
         this.#sphere.position.x = x;
         this.#sphere.position.z = z;
+
+        this.#sphere.rotation.y = -(this.currentAngle); //  - Math.PI / 2);
     }
 
 
@@ -284,11 +290,17 @@ export default class MainScene {
         // this.#scene.add( this.#sphere );
 
     }
+
     setListeners() {
         document.addEventListener("keydown", (event) => this.onDocumentKeyDown(event), false);
     }
 
     onDocumentKeyDown(event) {
+        console.log(this.#controls_on)
+        if (!this.#controls_on) {
+            return;
+        }
+
         var keyCode = event.which;
 
         const forward = this.getHeading();
@@ -518,7 +530,22 @@ export default class MainScene {
     setControls() {
         this.#controls = new OrbitControls(this.#camera, this.#renderer.domElement)
         this.#controls.enableDamping = true
-        // this.#controls.dampingFactor = 0.04
+
+        this.#gui = new GUI();
+        this.#settings = {
+            controls: false,
+        };
+
+        this.#gui.add(this.#settings, 'controls').name('Toggle Controls (WASD / R)').onChange((value) => {
+            // Logic to handle toggle, e.g., show/hide a sphere in Three.js
+            if (this.#controls_on) {
+                this.#controls_on = false;
+            } else {
+                this.#controls_on = true;
+            }
+        });
+
+
     }
 
     setAxesHelper() {
