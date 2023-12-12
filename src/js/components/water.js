@@ -84,7 +84,7 @@ export default class MainScene {
     #sphere;
     #gui
     #settings
-    #controls_on = false;
+    #controls_on = true;
 
     constructor() {
         this.#canvas = document.querySelector('.scene')
@@ -533,7 +533,7 @@ export default class MainScene {
 
         this.#gui = new GUI();
         this.#settings = {
-            controls: false,
+            controls: true,
         };
 
         this.#gui.add(this.#settings, 'controls').name('Toggle Controls (WASD / R)').onChange((value) => {
