@@ -231,7 +231,7 @@ export default class MainScene {
 
 
     async setAgent() {
-
+        const materialColor = 0x0040C0;
         // const geometry = new SphereGeometry( 10, 32, 32 );
       // const geometry = new TorusGeometry( 10, 3, 16, 100 );
         // // const material = new MeshBasicMaterial( {color: 0xffff00} );
@@ -247,12 +247,17 @@ export default class MainScene {
                 }
             ]),
             vertexShader: agentVertexShader,
-            fragmentShader: agentFragmentShader,
-            // fragmentShader: ShaderChunk[ 'meshphong_frag' ],
+            fragmentShader: ShaderChunk[ 'meshphong_frag' ],
         });
 
+        material.lights = true;
+        material.uniforms[ 'diffuse' ].value = new Color( materialColor );
+        material.uniforms[ 'specular' ].value = new Color( 0x111111 );
+        material.uniforms[ 'shininess' ].value = Math.max( 50, 1e-4 );
+        material.uniforms[ 'opacity' ].value = material.opacity;
       material.defines.WIDTH = WIDTH.toFixed(1);
       material.defines.BOUNDS = BOUNDS.toFixed(1);
+        agentUniforms = material.uniforms;
 
       const phongMaterial = new MeshPhongMaterial({
         color: 0xaaaaaa,
@@ -260,7 +265,6 @@ export default class MainScene {
         shininess: 30
       });
         //
-        agentUniforms = material.uniforms;
 
         try {
           await this.loadModel(material);
@@ -430,31 +434,6 @@ export default class MainScene {
             console.error(error);
 
         }
-
-        // Create compute shader to smooth the water surface and velocity
-        // smoothShader = gpuCompute.createShaderMaterial(smoothFragmentShader, {smoothTexture: {value: null}});
-
-        // Create compute shader to read water level
-        // readWaterLevelShader = gpuCompute.createShaderMaterial(readWaterLevelFragmentShader, {
-        //     point1: {value: new Vector2()},
-        //     levelTexture: {value: null}
-        // });
-        // readWaterLevelShader.defines.WIDTH = WIDTH.toFixed(1);
-        // readWaterLevelShader.defines.BOUNDS = BOUNDS.toFixed(1);
-        //
-        // // Create a 4x1 pixel image and a render target (Uint8, 4 channels, 1 byte per channel) to read water height and orientation
-        // readWaterLevelImage = new Uint8Array(4 * 1 * 4);
-        // //
-        // readWaterLevelRenderTarget = new WebGLRenderTarget(4, 1, {
-        //     wrapS: ClampToEdgeWrapping,
-        //     wrapT: ClampToEdgeWrapping,
-        //     minFilter: NearestFilter,
-        //     magFilter: NearestFilter,
-        //     format: RGBAFormat,
-        //     type: UnsignedByteType,
-        //     depthBuffer: false
-        // });
-
     }
 
     fillTexture = (texture) => {
