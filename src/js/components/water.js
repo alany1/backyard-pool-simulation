@@ -81,10 +81,12 @@ export default class MainScene {
     #mesh
     #cube_mesh
     #plane_mesh
-    #sphere;
+    #sphere
     #gui
     #settings
-    #controls_on = false;
+    #controls_on = false
+    #axes_on = false;
+    #axesHelper;
 
     constructor() {
         this.#canvas = document.querySelector('.scene')
@@ -534,6 +536,7 @@ export default class MainScene {
         this.#gui = new GUI();
         this.#settings = {
             controls: false,
+            axes: false,
         };
 
         this.#gui.add(this.#settings, 'controls').name('Toggle Controls (WASD / R)').onChange((value) => {
@@ -545,12 +548,24 @@ export default class MainScene {
             }
         });
 
+        this.#gui.add(this.#settings, 'axes').name('Toggle Axes Helper').onChange((value) => {
+            // Logic to handle toggle, e.g., show/hide a sphere in Three.js
+            if (this.#axes_on) {
+                this.#axes_on = false;
+                this.#axesHelper.visible = false;
+            } else {
+                this.#axes_on = true;
+                this.#axesHelper.visible = true;
+            }
+        });
+
 
     }
 
     setAxesHelper() {
-        const axesHelper = new AxesHelper(100)
-        this.#scene.add(axesHelper)
+        this.#axesHelper = new AxesHelper(100)
+        this.#axesHelper.visible = false;
+        this.#scene.add(this.#axesHelper)
     }
 
     events() {
