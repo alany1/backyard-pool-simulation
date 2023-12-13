@@ -4,7 +4,7 @@ import * as path from 'path'
 
 export default defineConfig({
   root: 'src',
-  base: '/graphics_final_project', // for Github pages, otherwise use './'
+  base: '/graphics_final_project/', // for Github pages, otherwise use './'
   build: {
     outDir: '../dist',
   },
