@@ -72,7 +72,7 @@ void main() {
     // final height (in water frame) = height (water) + displacement (water) + height ( original agent )
 //    vec4 transformed_to_water = vec4(agent_to_water.x, water_resting_height + displacement + 1.5 * position.y  , agent_to_water.z, 1.0);
     float scale_y = extractScale(tf_agent_to_water).y;
-    vec4 transformed_to_water = vec4(agent_to_water.x, water_resting_height + scale_y * position.y + displacementFactor*(displacement), agent_to_water.z, 1.0);
+    vec4 transformed_to_water = vec4(agent_to_water.x, water_resting_height + scale_y * position.y + displacementFactor*(displacement) - 20., agent_to_water.z, 1.0);
 //    vec4 transformed_to_water = vec4(agent_to_water.x, water_resting_height + 1.5 * displacement + scale_y * position.y, agent_to_water.z, 1.0);
 
 //    if (agent_to_water.z > -20.0 && agent_to_water.z < 20.0) {
