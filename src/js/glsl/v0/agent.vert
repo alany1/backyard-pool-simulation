@@ -36,7 +36,7 @@ vec3 extractScale(mat4 matrix) {
 }
 
 float get_rand(vec2 co){
-    return 2.0 * (fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453) - 0.5);
+    return 2.0 * (fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5);
 }
 
 void main() {
@@ -50,34 +50,27 @@ void main() {
     #include <skinnormal_vertex>
     #include <defaultnormal_vertex>
 
-    #ifndef FLAT_SHADED // Normal computed with derivatives when FLAT_SHADED
+    #ifndef FLAT_SHADED// Normal computed with derivatives when FLAT_SHADED
 
-    vNormal = normalize( transformedNormal );
+    vNormal = normalize(transformedNormal);
 
     #endif
 
-    mat4 tf_agent_to_water = tf_agent_to_world; // missing the height drop to water
+    mat4 tf_agent_to_water = tf_agent_to_world;// missing the height drop to water
 
     vec4 agent_to_water = tf_agent_to_water * vec4(position, 1.0);
 
     // get the height displacement using the xz coordinates in the water frame
     vec2 uv = vec2((agent_to_water.x + waterWidth / 2.0) / waterWidth,
-                   (agent_to_water.z + waterDepth / 2.0) / waterDepth);
+    (agent_to_water.z + waterDepth / 2.0) / waterDepth);
 
     float clamp_norm = 100.0;
     float displacement = clamp(texture2D(heightmap, uv).x, -clamp_norm, clamp_norm);
 
     float displacementFactor = smoothstep(0.0, 1.0, abs(agent_to_water.z) / 25.0);
 
-    // final height (in water frame) = height (water) + displacement (water) + height ( original agent )
-//    vec4 transformed_to_water = vec4(agent_to_water.x, water_resting_height + displacement + 1.5 * position.y  , agent_to_water.z, 1.0);
     float scale_y = extractScale(tf_agent_to_water).y;
     vec4 transformed_to_water = vec4(agent_to_water.x, water_resting_height + scale_y * position.y + displacementFactor*(displacement) - 20., agent_to_water.z, 1.0);
-//    vec4 transformed_to_water = vec4(agent_to_water.x, water_resting_height + 1.5 * displacement + scale_y * position.y, agent_to_water.z, 1.0);
-
-//    if (agent_to_water.z > -20.0 && agent_to_water.z < 20.0) {
-//        transformed_to_water = vec4(agent_to_water.x, water_resting_height + 1.5 * displacement + scale_y * position.y , agent_to_water.z , 1.0);
-//    }
 
     vec3 transformed = (inverse(tf_agent_to_water) * transformed_to_water).xyz;
 

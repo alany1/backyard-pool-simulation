@@ -40,8 +40,6 @@ import GUI from 'lil-gui'
 import waterVertexShader from '@/js/glsl/v0/water.vert'
 import waterFragmentShader from '@/js/glsl/v0/water.frag'
 import {GPUComputationRenderer} from "three/addons/misc/GPUComputationRenderer.js";
-import smoothFragmentShader from '@/js/glsl/v0/smoothing.frag'
-import readWaterLevelFragmentShader from '@/js/glsl/v0/read_water_level.frag'
 import heightmapFragmentShader from '@/js/glsl/v0/heightmap.frag'
 import agentVertexShader from '@/js/glsl/v0/agent.vert'
 import agentFragmentShader from '@/js/glsl/v0/agent.frag'
@@ -181,13 +179,11 @@ export default class MainScene {
     this.#sphere.position.x = x;
     this.#sphere.position.z = z;
 
-    this.#sphere.rotation.y = -(this.currentAngle); //  - Math.PI / 2);
+    this.#sphere.rotation.y = -(this.currentAngle);
   }
 
 
   render() {
-    // const uniforms = heightmapVariable.material.uniforms;
-    // uniforms['mousePos'].value.set(10000, 10000)
     gpuCompute.compute();
     waterUniforms['heightmap'].value = gpuCompute.getCurrentRenderTarget(heightmapVariable).texture;
     waterUniforms['cameraPos'].value.copy(this.#camera.position);
@@ -217,25 +213,19 @@ export default class MainScene {
           // Apply any initial transformations
           model.position.set(0, 0, 0);
           model.scale.set(10, 10, 10);  // Set scale if needed
-          // this.#sphere.rotation.y = -Math.pi / 2;  // Set rotation if needed
 
-          // Replace this.#sphere with the loaded model
           this.#sphere = model;
-          // this.#sphere.matrixAutoUpdate = false;
           this.#sphere.updateMatrix()
-
-          // Change material
           this.#sphere.material = material;
 
-          // Add the model to the scene
           this.#scene.add(this.#sphere);
 
-          resolve(model); // Resolve the Promise with the loaded model
+          resolve(model);
         },
-        undefined, // Function called when download is in progress
+        undefined,
         (error) => {
           console.error('An error happened', error);
-          reject(error); // Reject the Promise on error
+          reject(error);
         }
       );
     });
@@ -244,9 +234,6 @@ export default class MainScene {
 
   async setAgent() {
     const materialColor = 0xFFD801;
-    // const geometry = new SphereGeometry( 10, 32, 32 );
-    // const geometry = new TorusGeometry( 10, 3, 16, 100 );
-    // // const material = new MeshBasicMaterial( {color: 0xffff00} );
     const material = new ShaderMaterial({
       uniforms: UniformsUtils.merge([
         ShaderLib['phong'].uniforms,
@@ -272,13 +259,6 @@ export default class MainScene {
     material.defines.BOUNDS = BOUNDS.toFixed(1);
     agentUniforms = material.uniforms;
 
-    const phongMaterial = new MeshPhongMaterial({
-      color: 0xaaaaaa,
-      specular: 0x111111,
-      shininess: 30
-    });
-    //
-
     try {
       await this.loadModel(material);
       console.log('Model loaded')
@@ -288,13 +268,6 @@ export default class MainScene {
     }
 
     console.log(this.#sphere.position)
-    //
-    // this.#sphere = new Mesh( geometry, material );
-    // this.#sphere.position.set(0, 0, 0)
-    // this.#sphere.rotation.y = -Math.PI / 2;
-    //
-    // this.#scene.add( this.#sphere );
-
   }
 
   setListeners() {
@@ -327,7 +300,7 @@ export default class MainScene {
     }
 
     let size = 37.0;
-    this.#sphere.position.x = clamp(this.#sphere.position.x, -BOUNDS / 2 + size , BOUNDS / 2 - size);
+    this.#sphere.position.x = clamp(this.#sphere.position.x, -BOUNDS / 2 + size, BOUNDS / 2 - size);
     this.#sphere.position.z = clamp(this.#sphere.position.z, -BOUNDS / 2 + size, BOUNDS / 2 - size);
 
   };
