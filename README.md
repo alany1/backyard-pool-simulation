@@ -1,4 +1,4 @@
-[demo.mov](demo.mov)
+[![demo.mov](demo.mov)](demo.mov)
 # Vite template builder to quickly generate Threejs code in the browser.
 
 This repository will help creating 3D environment using [Threejs](https://threejs.org/examples/#webgl_animation_keyframes), a powerful WebGL library. It is powered by [Vite](https://vitejs.dev/guide/why.html) ⚡️ that quickly compiles anything you need, it is also including [Sass](https://sass-lang.com/guide), [Babel](https://babeljs.io/), [Eslint](https://eslint.org/), [Prettier](https://prettier.io/), [lil-gui](https://www.npmjs.com/package/lil-gui) and [GSAP](https://greensock.com/docs/) for animations.
