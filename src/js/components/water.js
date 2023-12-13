@@ -205,14 +205,12 @@ export default class MainScene {
     return new Promise((resolve, reject) => {
       const loader = new OBJLoader();
       loader.load(
-        './textures/Duck.obj', // Path to the OBJ file
+        './textures/Duck.obj',
         (obj) => {
-          // Assuming the model is a single object
           const model = obj.children[0];
 
-          // Apply any initial transformations
           model.position.set(0, 0, 0);
-          model.scale.set(10, 10, 10);  // Set scale if needed
+          model.scale.set(10, 10, 10);
 
           this.#sphere = model;
           this.#sphere.updateMatrix()
@@ -400,8 +398,8 @@ export default class MainScene {
         ShaderLib['phong'].uniforms,
         {
           'heightmap': {value: null},
-          'envMap': {value: this.#scene.background}, // Pass the cubemap here
-          'cameraPos': {value: new Vector3()}, // Camera position
+          'envMap': {value: this.#scene.background},
+          'cameraPos': {value: new Vector3()},
           'reflectionStrength': {value: .6},
           'transparency': {value: 0.8},
           'agentPosition': {value: null},
@@ -524,7 +522,6 @@ export default class MainScene {
     };
 
     this.#gui.add(this.#settings, 'controls').name('Toggle Controls (WASD / R)').onChange((value) => {
-      // Logic to handle toggle, e.g., show/hide a sphere in Three.js
       if (this.#controls_on) {
         this.#controls_on = false;
       } else {
@@ -533,7 +530,6 @@ export default class MainScene {
     });
 
     this.#gui.add(this.#settings, 'axes').name('Toggle Axes Helper').onChange((value) => {
-      // Logic to handle toggle, e.g., show/hide a sphere in Three.js
       if (this.#axes_on) {
         this.#axes_on = false;
         this.#axesHelper.visible = false;

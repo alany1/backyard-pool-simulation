@@ -56,7 +56,7 @@ void main() {
 
     #endif
 
-    mat4 tf_agent_to_water = tf_agent_to_world;// missing the height drop to water
+    mat4 tf_agent_to_water = tf_agent_to_world;
 
     vec4 agent_to_water = tf_agent_to_water * vec4(position, 1.0);
 
