@@ -121,7 +121,7 @@ export default class MainScene {
     container.appendChild(this.#stats.dom);
 
     const cubeTextureLoader = new CubeTextureLoader();
-    cubeTextureLoader.setPath('/textures/park/');
+    cubeTextureLoader.setPath('../textures/park/');
 
     const cubeTexture = cubeTextureLoader.load([
       'px.jpg', 'nx.jpg',
@@ -209,7 +209,7 @@ export default class MainScene {
     return new Promise((resolve, reject) => {
       const loader = new OBJLoader();
       loader.load(
-        '/textures/Duck.obj', // Path to the OBJ file
+        './textures/Duck.obj', // Path to the OBJ file
         (obj) => {
           // Assuming the model is a single object
           const model = obj.children[0];
@@ -355,7 +355,7 @@ export default class MainScene {
 
 
   setWalls() {
-    const texture = new TextureLoader().load('/textures/pool_floor.jpg')
+    const texture = new TextureLoader().load('./textures/pool_floor.jpg')
     const geometry = new PlaneGeometry(BOUNDS, BOUNDS / 2, WIDTH - 1, WIDTH - 1);
     const material = new MeshBasicMaterial(
       {
@@ -401,7 +401,7 @@ export default class MainScene {
   }
 
   setGround() {
-    const texture = new TextureLoader().load('/textures/pool_wall_marble.jpg')
+    const texture = new TextureLoader().load('./textures/pool_wall_marble.jpg')
     const geometry = new PlaneGeometry(BOUNDS, BOUNDS, WIDTH - 1, WIDTH - 1);
     const material = new MeshBasicMaterial(
       {
