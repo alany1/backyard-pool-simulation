@@ -6,7 +6,7 @@ export default defineConfig({
   root: 'src',
   base: '/graphics_final_project/', // for Github pages, otherwise use './'
   build: {
-    outDir: '../dist',
+    outDir: './dist',
   },
   server: {
     host: true, // to test on other devices with IP address
