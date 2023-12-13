@@ -121,7 +121,7 @@ export default class MainScene {
     container.appendChild(this.#stats.dom);
 
     const cubeTextureLoader = new CubeTextureLoader();
-    cubeTextureLoader.setPath('../textures/park/');
+    cubeTextureLoader.setPath('./textures/park/');
 
     const cubeTexture = cubeTextureLoader.load([
       'px.jpg', 'nx.jpg',
